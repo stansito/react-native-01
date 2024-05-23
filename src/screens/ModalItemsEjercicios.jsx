@@ -1,45 +1,149 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity } from "react-native";
+import { View, FlatList, StyleSheet, Button, Dimensions, StatusBar,ScrollView  } from "react-native";
+import CustomCard from '../components/CustomCard';
+import CustomSearchBar from '../components/CustomSearchBar';
+import CustomItem from '../components/CustomItem';
+import { CardDivider } from '@rneui/base/dist/Card/Card.Divider';
+import exercises from '../utils/resources/exercices';
+import { TabView, SceneMap } from 'react-native-tab-view';
+import { Tab    } from '@rneui/base';
+
 
 export function ModalItemsEjercicios({ navigation }) {
     const [searchQuery, setSearchQuery] = useState('');
-    
-    
-    const [exercises, setExercises] = useState([
-        // Suponiendo que tienes una lista inicial de ejercicios
-        { id: 1, name: 'Push Up' },
-        { id: 2, name: 'Pull Up' },
-        { id: 3, name: 'Squat' }
-    ]);
     const [filteredExercises, setFilteredExercises] = useState(exercises);
 
+    const FirstRoute = () => (
+        <FlatList
+        data={filteredExercises}
+        keyExtractor={item => item.id.toString()}
+        renderItem={({ item }) => (
+            <CustomItem item={item} onPress={handleSelectExercise} />
+        )}
+    />
+        
+      );
+      const SecondRoute = () => (
+        <View style={[styles.scene, { backgroundColor: '#673ab7' }]} />
+      );
+    
+      const [index, setIndex] = useState(0);
+    const [routes] = useState([
+        { key: 'first', title: 'First' },
+        { key: 'second', title: 'Second' },
+    ]);
+
+    const [indexScroll, setIndexScroll] = useState(0);
+    const handleScroll = (event) => {
+    const { contentOffset, layoutMeasurement } = event.nativeEvent;
+    const currentIndex = Math.round(contentOffset.x / layoutMeasurement.width);
+        if (currentIndex !== indexScroll) {
+          setIndexScroll(currentIndex);
+        }
+      };
+
+
     useEffect(() => {
-        // Filtrar ejercicios basados en searchQuery
         const filtered = exercises.filter(exercise => exercise.name.toLowerCase().includes(searchQuery.toLowerCase()));
         setFilteredExercises(filtered);
-    }, [searchQuery, exercises]);
+    }, [searchQuery]);
 
     const handleSelectExercise = (exercise) => {
         navigation.navigate('Ejercicio', { selectedExercise: exercise });
     };
 
     return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center',  }}>
-            <TextInput
+        <CustomCard>
+          
+            <CustomSearchBar
                 placeholder="Buscar ejercicio"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
-                style={{ height: 40, borderColor: 'gray', borderWidth: 1, width: '80%', padding: 10 }}
             />
-            <FlatList
-                data={filteredExercises}
-                keyExtractor={item => item.id.toString()}
-                renderItem={({ item }) => (
-                    <TouchableOpacity onPress={() => handleSelectExercise(item)}>
-                        <Text>{item.name}</Text>
-                    </TouchableOpacity>
-                )}
+
+            <TabView
+                navigationState={{ index, routes }}
+                renderScene={SceneMap({
+                    first: FirstRoute,
+                    second: SecondRoute,
+                })}
+                onIndexChange={setIndex}
+                initialLayout={{ width: Dimensions.get('window').width }}
+                style={styles.tabView}
             />
-        </View>
+        </CustomCard>
     );
 }
+
+const styles = StyleSheet.create({
+
+    fonts: {
+        marginBottom: 8,
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    scene: {
+        flex: 1, 
+ 
+    },
+    tabView: {
+        paddingTop: 10,
+        flex: 1, // Asegura que el TabView ocupe todo el espacio disponible
+        
+      },
+});
+
+export default ModalItemsEjercicios;
+
+
+/*
+ <TabView
+                    navigationState={{ index, routes }}
+                    renderScene={SceneMap({
+                        first: FirstRoute,
+                        second: SecondRoute,
+                    })}
+                    onIndexChange={setIndex}
+                    initialLayout={{ width: Dimensions.get('window').width }}
+                    style={styles.tabView}
+                />
+          
+
+  <StyledCard>
+                <CustomSearchBar
+                    placeholder="Buscar ejercicio"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                />
+                 <CardDivider borderColor='transparent'/>
+                <FlatList
+                    data={filteredExercises}
+                    keyExtractor={item => item.id.toString()}
+                    renderItem={({ item }) => (
+                        <CustomItem item={item} onPress={handleSelectExercise} />
+                    )}
+                />
+                <Button title="Ejercicios" size="sm" type="clear">
+                    Ejercicios
+                </Button>
+            </StyledCard>
+
+
+            Esto es dado por chatgpt
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={200}
+        >
+            <View style={[styles.page, { backgroundColor: '#ff4081' }]}>
+
+            </View>
+            <View style={[styles.page, { backgroundColor: '#673ab7' }]}>
+
+            </View>
+        </ScrollView>
+
+
+*/

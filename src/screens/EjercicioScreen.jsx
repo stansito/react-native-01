@@ -6,6 +6,7 @@ export function EjercicioScreen({ route, navigation }) {
 
     useEffect(() => {
         if (route.params?.selectedExercise) {
+            
             setEjercicios(prevEjercicios => [...prevEjercicios, route.params.selectedExercise]);
         }
     }, [route.params?.selectedExercise]);
@@ -14,8 +15,8 @@ export function EjercicioScreen({ route, navigation }) {
         <View>
             <Text>EjercicioScreen</Text>
             <View>
-                {ejercicios.map(ejercicio => (
-                    <Text key={ejercicio.id}>
+                {ejercicios.map((ejercicio, key) => (
+                    <Text key={key}>
                         {ejercicio.name}
                     </Text>
                 ))}
