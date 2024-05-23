@@ -7,7 +7,8 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { RutinaScreen } from '../screens/RutinaScreen';
 import { EjercicioScreen } from '../screens/EjercicioScreen';
 import { ModalItemsEjercicios } from '../screens/ModalItemsEjercicios';
-
+import { toastConfig } from '../components/CustomToast';
+import Toast from 'react-native-toast-message';
 function HomeStackScreen() {
 const HomeStack = createNativeStackNavigator();
   return (
@@ -43,11 +44,11 @@ function MyStack() {
       </Tab.Navigator>
   );
 }
-
 export default function Navigation() {
   return (
     <NavigationContainer>
       <MyStack />
+      <Toast  config={toastConfig} ref={(ref) => Toast.setRef(ref)} />
     </NavigationContainer>
   );
 }

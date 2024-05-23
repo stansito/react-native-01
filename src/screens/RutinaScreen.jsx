@@ -1,41 +1,64 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomCard from '../components/CustomCard';
+import Toast from 'react-native-toast-message';
 
-export function RutinaScreen({navigation}) {
+export function RutinaScreen({ navigation, route }) {
     const [rutinaName, setRutinaName] = useState('');
-
-    //validacion de nombre de rutina
-    const handleRutinaNameChange = (text) => {
-            setRutinaName(text);
-    };
-
     const [isConfirmed, setIsConfirmed] = useState(false);
+    const [exercises, setExercises] = useState([]);
+    const [routine, setRoutine] = useState(null);
 
     useEffect(() => {
-        if (isConfirmed) {
-            if (rutinaName) {
-                Alert.alert('Éxito', 'Rutina agregada con éxito');
-                setIsConfirmed(false); // Restablecer para futuras confirmaciones
-                // Aquí podrías también limpiar los estados o enviar los datos a un servidor
-            } else {
-                Alert.alert('Error', 'Por favor, completa todos los campos');
-                setIsConfirmed(false); // Restablecer en caso de error
-            }
+        if (route.params?.routine) {
+            const selectedRoutine = route.params.routine;
+            setRoutine(selectedRoutine);
+            setRutinaName(selectedRoutine.name);
+            setExercises(selectedRoutine.exercises);
         }
-    }, [isConfirmed, rutinaName]);
-   
-    const handleConfirmRoutine = () => {
-        if (rutinaName ) {
-            Alert.alert('Éxito', 'Rutina agregada con éxito');
-            // Aquí podrías también limpiar los estados o enviar los datos a un servidor
+    }, [route.params?.routine]);
+    
+    useEffect(() => {
+      
+        if (route.params?.selectedExercise) {
+            setExercises(prevExercises => [...prevExercises, route.params.selectedExercise]);
+        }
+    }, [route.params?.selectedExercise]);
+
+    const handleRutinaNameChange = (text) => {
+        setRutinaName(text);
+    };
+
+    const handleConfirmRoutine = async () => {
+        if (rutinaName && exercises.length > 0) {
+            const newRoutine = { name: rutinaName, exercises: exercises };
+            try {
+                let storedRoutines = await AsyncStorage.getItem('routines');
+                storedRoutines = storedRoutines ? JSON.parse(storedRoutines) : [];
+    
+                // Buscar la rutina existente
+                const existingRoutineIndex = storedRoutines.findIndex(routine => routine.name === rutinaName);
+    
+                if (existingRoutineIndex !== -1) {
+                    // Actualizar la rutina existente
+                    storedRoutines[existingRoutineIndex] = newRoutine;
+                } else {
+                    // Agregar la nueva rutina si no existe
+                    storedRoutines.push(newRoutine);
+                }
+    
+                await AsyncStorage.setItem('routines', JSON.stringify(storedRoutines));
+                navigation.navigate('Entrenamiento'); // Navegar a la pantalla principal
+            } catch (error) {
+                Alert.alert('Error', 'Hubo un problema al guardar la rutina');
+            }
         } else {
             Alert.alert('Error', 'Por favor, completa todos los campos');
         }
     };
-
     return (
-        <View style={styles.container}>
+        <CustomCard>
             <Text style={styles.title}>Crear Nueva Rutina</Text>
             <TextInput
                 style={styles.input}
@@ -43,6 +66,13 @@ export function RutinaScreen({navigation}) {
                 value={rutinaName}
                 onChangeText={handleRutinaNameChange}
             />
+            <ScrollView>
+                {exercises.map((exercise, index) => (
+                    <View key={index} style={styles.exerciseContainer}>
+                        <Text style={styles.exerciseText}>{exercise.name}</Text>
+                    </View>
+                ))}
+            </ScrollView>
             <Button
                 title="Agregar Ejercicio"
                 onPress={() => navigation.navigate('Ejercicio')}
@@ -51,7 +81,8 @@ export function RutinaScreen({navigation}) {
                 title="Confirmar Rutina"
                 onPress={handleConfirmRoutine}
             />
-        </View>
+     
+        </CustomCard>
     );
 }
 
@@ -74,4 +105,16 @@ const styles = StyleSheet.create({
         borderColor: '#ccc',
         padding: 10,
     },
+    exerciseContainer: {
+        marginBottom: 10,
+        padding: 10,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+    },
+    exerciseText: {
+        fontSize: 18,
+    },
 });
+
+export default RutinaScreen;

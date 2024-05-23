@@ -12,22 +12,8 @@ import { Tab    } from '@rneui/base';
 export function ModalItemsEjercicios({ navigation }) {
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredExercises, setFilteredExercises] = useState(exercises);
-
-    const FirstRoute = () => (
-        <FlatList
-        data={filteredExercises}
-        keyExtractor={item => item.id.toString()}
-        renderItem={({ item }) => (
-            <CustomItem item={item} onPress={handleSelectExercise} />
-        )}
-    />
-        
-      );
-      const SecondRoute = () => (
-        <View style={[styles.scene, { backgroundColor: '#673ab7' }]} />
-      );
     
-      const [index, setIndex] = useState(0);
+    const [index, setIndex] = useState(0);
     const [routes] = useState([
         { key: 'first', title: 'First' },
         { key: 'second', title: 'Second' },
@@ -51,6 +37,20 @@ export function ModalItemsEjercicios({ navigation }) {
     const handleSelectExercise = (exercise) => {
         navigation.navigate('Ejercicio', { selectedExercise: exercise });
     };
+
+    const FirstRoute = () => (
+        <FlatList
+        data={filteredExercises}
+        keyExtractor={item => item.id.toString()}
+        renderItem={({ item }) => (
+            <CustomItem item={item} onPress={handleSelectExercise} />
+        )}
+    />
+        
+      );
+      const SecondRoute = () => (
+        <View style={[styles.scene, { backgroundColor: '#673ab7' }]} />
+      );
 
     return (
         <CustomCard>
