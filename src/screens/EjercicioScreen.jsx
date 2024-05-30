@@ -1,63 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, ScrollView } from 'react-native';
 import CustomCard from '../components/CustomCard';
-import Serie from '../components/Serie'; // Asegúrate de que la ruta sea correcta
+import Serie from '../components/Serie';
 import Toast from 'react-native-toast-message';
 
 export function EjercicioScreen({ route, navigation }) {
-    const [currentExercise, setCurrentExercise] = useState(null);
+    const [currentExercise, setCurrentExercise] = useState({ id: Date.now().toString(), name: '', series: [] });
     const [series, setSeries] = useState([]);
+    const exerciseIndex = route.params?.exerciseIndex;
 
     useEffect(() => {
         if (route.params?.selectedExercise) {
             setCurrentExercise(route.params.selectedExercise);
-            setSeries([]); // Resetea las series cuando se selecciona un nuevo ejercicio
+            setSeries(route.params.selectedExercise.series || []);
         }
     }, [route.params?.selectedExercise]);
 
     const addSerie = () => {
-        setSeries(prevSeries => [...prevSeries, { reps: '', weight: '' }]);
+        setSeries(prevSeries => [...prevSeries, { id: Date.now().toString(), reps: '', weight: '' }]);
     };
 
-    const removeSerie = (index) => {
-        setSeries(prevSeries => prevSeries.filter((_, i) => i !== index));
+    const removeSerie = (id) => {
+        setSeries(prevSeries => prevSeries.filter(serie => serie.id !== id));
     };
 
-    const updateSerie = (index, reps, weight) => {
+    const updateSerie = (id, reps, weight) => {
         setSeries(prevSeries => {
-            const newSeries = [...prevSeries];
-            newSeries[index] = { reps, weight };
+            const newSeries = prevSeries.map(serie =>
+                serie.id === id ? { ...serie, reps, weight } : serie
+            );
             return newSeries;
         });
     };
 
-    const addExercise = () => {
-        if (currentExercise) {
-            const updatedExercise = { ...currentExercise, series: series };
-            Toast.show({
-                type: 'debuggerInfo',
-                text1: `UPDATEExercise:  ${JSON.stringify(updatedExercise)}`,
-                position: 'bottom',
-                visibilityTime: 5000,
-                bottom: 200
-            });
-            navigation.navigate('Rutina', { selectedExercise: updatedExercise });
-        }
+    const saveExercise = () => {
+        const updatedExercise = { ...currentExercise, series };
+        navigation.navigate('Rutina', { selectedExercise: updatedExercise, exerciseIndex: exerciseIndex });
     };
 
     return (
         <CustomCard>
             <Button
-                onPress={() => navigation.navigate('ModalItemsEjercicios')}
+                onPress={() => navigation.navigate('ModalItemsEjercicios', { exerciseIndex })}
                 title="Seleccionar Ejercicio"
             />
             {currentExercise && (
                 <View>
                     <Text style={styles.exerciseTitle}>{currentExercise.name}</Text>
-                    <ScrollView>
+               
                         {series.map((serie, index) => (
                             <Serie
-                                key={index}
+                                key={serie.id}
+                                id={serie.id}
                                 index={index}
                                 reps={serie.reps}
                                 weight={serie.weight}
@@ -65,9 +59,9 @@ export function EjercicioScreen({ route, navigation }) {
                                 onDelete={removeSerie}
                             />
                         ))}
-                    </ScrollView>
+                
                     <Button title="Agregar Serie" onPress={addSerie} />
-                    <Button title="Agregar ejercicio" onPress={addExercise} />
+                    <Button title="Guardar Ejercicio" onPress={saveExercise} />
                 </View>
             )}
         </CustomCard>
@@ -83,3 +77,4 @@ const styles = StyleSheet.create({
 });
 
 export default EjercicioScreen;
+

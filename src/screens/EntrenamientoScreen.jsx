@@ -8,15 +8,22 @@ export function EntrenamientoScreen({ navigation }) {
     const [routines, setRoutines] = useState([]);
 
     useEffect(() => {
+       
         const loadRoutines = async () => {
             try {
                 const storedRoutines = await AsyncStorage.getItem('routines');
+             
+             
                 if (storedRoutines) {
                     const routinesData = JSON.parse(storedRoutines);
                     setRoutines(routinesData);
-                    routinesData.forEach(routine => {
-                        showRoutineToast(routine);
-                    });
+                   /* Toast.show({
+                        type: 'debuggerInfo',
+                        text1: `Rutinas:  ${JSON.stringify(routinesData)}`,
+                        position: 'bottom',
+                        visibilityTime: 10000,
+                        bottom: 200
+                    });*/
                 }
             } catch (error) {
                 console.error('Error loading routines:', error);
@@ -33,16 +40,6 @@ export function EntrenamientoScreen({ navigation }) {
         return focusListener;
     }, [navigation]);
 
-    const showRoutineToast = (routine) => {
-        const exerciseNames = routine.exercises.map(ex => ex.name).join(', ');
-        Toast.show({
-            type: 'info',
-            text1: `Rutina: ${routine.name}`,
-            text2: `Ejercicios: ${exerciseNames}`,
-            position: 'bottom'
-        });
-    };
-
     const handleDeleteRoutine = async (routineIndex) => {
         try {
             const updatedRoutines = [...routines];
@@ -50,7 +47,7 @@ export function EntrenamientoScreen({ navigation }) {
             await AsyncStorage.setItem('routines', JSON.stringify(updatedRoutines));
             setRoutines(updatedRoutines);
             Toast.show({
-                type: 'success',
+                type: 'success',    
                 text1: 'Rutina eliminada',
                 text2: 'La rutina ha sido eliminada exitosamente'
             });

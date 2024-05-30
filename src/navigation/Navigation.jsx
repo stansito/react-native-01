@@ -48,7 +48,7 @@ export default function Navigation() {
   return (
     <NavigationContainer>
       <MyStack />
-      <Toast  config={toastConfig} ref={(ref) => Toast.setRef(ref)} />
+      <Toast  config={toastConfig} />
     </NavigationContainer>
   );
 }

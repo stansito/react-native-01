@@ -6,25 +6,37 @@ import Toast from 'react-native-toast-message';
 
 export function RutinaScreen({ navigation, route }) {
     const [rutinaName, setRutinaName] = useState('');
-    const [isConfirmed, setIsConfirmed] = useState(false);
     const [exercises, setExercises] = useState([]);
-    const [routine, setRoutine] = useState(null);
+    const [routineId, setRoutineId] = useState(null);
 
     useEffect(() => {
         if (route.params?.routine) {
             const selectedRoutine = route.params.routine;
-            setRoutine(selectedRoutine);
+            setRoutineId(selectedRoutine.id);
             setRutinaName(selectedRoutine.name);
             setExercises(selectedRoutine.exercises);
         }
     }, [route.params?.routine]);
     
     useEffect(() => {
-      
-        if (route.params?.selectedExercise) {
-            setExercises(prevExercises => [...prevExercises, route.params.selectedExercise]);
+        /*Toast.show({
+            type: 'debuggerInfo',
+            text1: `Rutinass:  ${JSON.stringify(route.params)}`,
+            position: 'bottom',
+            visibilityTime: 10000,
+            bottom: 200
+        });*/
+        if (route.params?.selectedExercise && route.params?.exerciseIndex !== undefined) {
+            const updatedExercise = route.params.selectedExercise;
+            const index = route.params.exerciseIndex;
+    
+            setExercises(prevExercises => {
+                const newExercises = [...prevExercises];
+                newExercises[index] = updatedExercise;
+                return newExercises;
+            });
         }
-    }, [route.params?.selectedExercise]);
+    }, [route.params?.selectedExercise, route.params?.exerciseIndex]);
 
     const handleRutinaNameChange = (text) => {
         setRutinaName(text);
@@ -32,24 +44,21 @@ export function RutinaScreen({ navigation, route }) {
 
     const handleConfirmRoutine = async () => {
         if (rutinaName && exercises.length > 0) {
-            const newRoutine = { name: rutinaName, exercises: exercises };
+            const newRoutine = { id: routineId || Date.now().toString(), name: rutinaName, exercises: exercises };
             try {
                 let storedRoutines = await AsyncStorage.getItem('routines');
                 storedRoutines = storedRoutines ? JSON.parse(storedRoutines) : [];
     
-                // Buscar la rutina existente
-                const existingRoutineIndex = storedRoutines.findIndex(routine => routine.name === rutinaName);
+                const existingRoutineIndex = storedRoutines.findIndex(routine => routine.id === routineId);
     
                 if (existingRoutineIndex !== -1) {
-                    // Actualizar la rutina existente
                     storedRoutines[existingRoutineIndex] = newRoutine;
                 } else {
-                    // Agregar la nueva rutina si no existe
                     storedRoutines.push(newRoutine);
                 }
     
                 await AsyncStorage.setItem('routines', JSON.stringify(storedRoutines));
-                navigation.navigate('Entrenamiento'); // Navegar a la pantalla principal
+                navigation.navigate('Entrenamiento');
             } catch (error) {
                 Alert.alert('Error', 'Hubo un problema al guardar la rutina');
             }
@@ -57,9 +66,14 @@ export function RutinaScreen({ navigation, route }) {
             Alert.alert('Error', 'Por favor, completa todos los campos');
         }
     };
+
+    const handleDeleteExercise = (index) => {
+        setExercises(prevExercises => prevExercises.filter((_, i) => i !== index));
+    };
+
     return (
         <CustomCard>
-            <Text style={styles.title}>Crear Nueva Rutina</Text>
+            <Text style={styles.title}>{routineId ? 'Editar Rutina' : 'Crear Nueva Rutina'}</Text>
             <TextInput
                 style={styles.input}
                 placeholder="Nombre de la Rutina"
@@ -70,29 +84,33 @@ export function RutinaScreen({ navigation, route }) {
                 {exercises.map((exercise, index) => (
                     <View key={index} style={styles.exerciseContainer}>
                         <Text style={styles.exerciseText}>{exercise.name}</Text>
+                        <View style={styles.buttonContainer}>
+                            <Button
+                                title="Editar"
+                                onPress={() => navigation.navigate('Ejercicio', { selectedExercise: exercise, exerciseIndex: index })}
+                            />
+                            <Button
+                                title="Eliminar"
+                                color="red"
+                                onPress={() => handleDeleteExercise(index)}
+                            />
+                        </View>
                     </View>
                 ))}
             </ScrollView>
             <Button
                 title="Agregar Ejercicio"
-                onPress={() => navigation.navigate('Ejercicio')}
+                onPress={() => navigation.navigate('Ejercicio', { exerciseIndex: exercises.length })}
             />
             <Button
                 title="Confirmar Rutina"
                 onPress={handleConfirmRoutine}
             />
-     
         </CustomCard>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
     title: {
         fontSize: 22,
         fontWeight: 'bold',
@@ -114,6 +132,11 @@ const styles = StyleSheet.create({
     },
     exerciseText: {
         fontSize: 18,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10,
     },
 });
 
