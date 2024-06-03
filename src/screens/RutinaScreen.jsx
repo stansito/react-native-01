@@ -4,6 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomCard from '../components/CustomCard';
 import Toast from 'react-native-toast-message';
 
+
+
 export function RutinaScreen({ navigation, route }) {
     const [rutinaName, setRutinaName] = useState('');
     const [exercises, setExercises] = useState([]);
@@ -17,7 +19,7 @@ export function RutinaScreen({ navigation, route }) {
             setExercises(selectedRoutine.exercises);
         }
     }, [route.params?.routine]);
-    
+     
     useEffect(() => {
         /*Toast.show({
             type: 'debuggerInfo',

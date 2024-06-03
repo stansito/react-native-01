@@ -44,6 +44,7 @@ export function EjercicioScreen({ route, navigation }) {
                 onPress={() => navigation.navigate('ModalItemsEjercicios', { exerciseIndex })}
                 title="Seleccionar Ejercicio"
             />
+            <ScrollView>
             {currentExercise && (
                 <View>
                     <Text style={styles.exerciseTitle}>{currentExercise.name}</Text>
@@ -60,10 +61,12 @@ export function EjercicioScreen({ route, navigation }) {
                             />
                         ))}
                 
-                    <Button title="Agregar Serie" onPress={addSerie} />
-                    <Button title="Guardar Ejercicio" onPress={saveExercise} />
+                 
                 </View>
             )}
+            </ScrollView>
+            <Button title="Agregar Serie" onPress={addSerie} />
+                    <Button title="Guardar Ejercicio" onPress={saveExercise} />
         </CustomCard>
     );
 }
