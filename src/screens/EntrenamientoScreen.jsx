@@ -3,6 +3,8 @@ import { View, Text, Button, StyleSheet, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomCard from '../components/CustomCard';
 import Toast from 'react-native-toast-message';
+import RoutineItem from '../components/RoutineItem';
+
 
 export function EntrenamientoScreen({ navigation }) {
     const [routines, setRoutines] = useState([]);
@@ -66,21 +68,14 @@ export function EntrenamientoScreen({ navigation }) {
             <Text style={styles.title}>Ventanas Principal de Entrenamientos</Text>
             <Button title="Crear Nueva Rutina" onPress={() => navigation.navigate('Rutina')} />
             <ScrollView>
-                {routines.map((routine, index) => (
-                    <View key={index} style={styles.routineContainer}>
-                        <Text style={styles.routineText}>{routine.name}</Text>
-                        {routine.exercises.map((exercise, idx) => (
-                            <Text key={idx} style={styles.exerciseText}>{exercise.name}</Text>
-                        ))}
-                        <Button
-                            title="Editar Rutina"
-                            onPress={() => navigation.navigate('Rutina', { routine: routine })}
-                        />
-                        <Button
-                            title="Eliminar Rutina"
-                            onPress={() => handleDeleteRoutine(index)}
-                        />
-                    </View>
+            {routines.map((routine, index) => (
+                    <RoutineItem
+                        key={index}
+                        routine={routine}
+                        index={index}
+                        navigation={navigation}
+                        handleDeleteRoutine={handleDeleteRoutine}
+                    />
                 ))}
             </ScrollView>
         </CustomCard>
