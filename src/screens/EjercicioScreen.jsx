@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, Button, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import CustomCard from '../components/CustomCard';
 import Serie from '../components/Serie';
-import Toast from 'react-native-toast-message';
+import Icon from 'react-native-vector-icons/FontAwesome6';
 
 export function EjercicioScreen({ route, navigation }) {
     const [currentExercise, setCurrentExercise] = useState({ id: Date.now().toString(), name: '', series: [] });
@@ -38,17 +38,27 @@ export function EjercicioScreen({ route, navigation }) {
         navigation.navigate('Rutina', { selectedExercise: updatedExercise, exerciseIndex: exerciseIndex });
     };
 
+    const handleSelectExercise = () => {
+        navigation.navigate('ModalItemsEjercicios', { exerciseIndex });
+    };
+
     return (
         <CustomCard>
-            <Button
-                onPress={() => navigation.navigate('ModalItemsEjercicios', { exerciseIndex })}
-                title="Seleccionar Ejercicio"
-            />
+            {currentExercise.name === '' && (
+                <Button
+                    onPress={handleSelectExercise}
+                    title="Seleccionar Ejercicio"
+                />
+            )}
             <ScrollView>
-            {currentExercise && (
-                <View>
-                    <Text style={styles.exerciseTitle}>{currentExercise.name}</Text>
-               
+                {currentExercise.name !== '' && (
+                    <View>
+                        <View style={styles.exerciseHeader}>
+                            <Text style={styles.exerciseTitle}>{currentExercise.name}</Text>
+                            <TouchableOpacity onPress={handleSelectExercise} style={styles.iconButton}>
+                                <Icon name="retweet" size={24} color="#000000" />
+                            </TouchableOpacity>
+                        </View>
                         {series.map((serie, index) => (
                             <Serie
                                 key={serie.id}
@@ -60,24 +70,29 @@ export function EjercicioScreen({ route, navigation }) {
                                 onDelete={removeSerie}
                             />
                         ))}
-                
-                 
-                </View>
-            )}
+                    </View>
+                )}
             </ScrollView>
             <Button title="Agregar Serie" onPress={addSerie} />
-                    <Button title="Guardar Ejercicio" onPress={saveExercise} />
+            <Button title="Guardar Ejercicio" onPress={saveExercise} />
         </CustomCard>
     );
 }
 
 const styles = StyleSheet.create({
+    exerciseHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
     exerciseTitle: {
         fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 20,
+    },
+    iconButton: {
+        padding: 5,
     },
 });
 
 export default EjercicioScreen;
-

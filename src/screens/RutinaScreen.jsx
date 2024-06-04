@@ -3,8 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 're
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomCard from '../components/CustomCard';
 import Toast from 'react-native-toast-message';
-
-
+import Icon from 'react-native-vector-icons/Octicons';
 
 export function RutinaScreen({ navigation, route }) {
     const [rutinaName, setRutinaName] = useState('');
@@ -19,19 +18,12 @@ export function RutinaScreen({ navigation, route }) {
             setExercises(selectedRoutine.exercises);
         }
     }, [route.params?.routine]);
-     
+
     useEffect(() => {
-        /*Toast.show({
-            type: 'debuggerInfo',
-            text1: `Rutinass:  ${JSON.stringify(route.params)}`,
-            position: 'bottom',
-            visibilityTime: 10000,
-            bottom: 200
-        });*/
         if (route.params?.selectedExercise && route.params?.exerciseIndex !== undefined) {
             const updatedExercise = route.params.selectedExercise;
             const index = route.params.exerciseIndex;
-    
+
             setExercises(prevExercises => {
                 const newExercises = [...prevExercises];
                 newExercises[index] = updatedExercise;
@@ -50,15 +42,15 @@ export function RutinaScreen({ navigation, route }) {
             try {
                 let storedRoutines = await AsyncStorage.getItem('routines');
                 storedRoutines = storedRoutines ? JSON.parse(storedRoutines) : [];
-    
+
                 const existingRoutineIndex = storedRoutines.findIndex(routine => routine.id === routineId);
-    
+
                 if (existingRoutineIndex !== -1) {
                     storedRoutines[existingRoutineIndex] = newRoutine;
                 } else {
                     storedRoutines.push(newRoutine);
                 }
-    
+
                 await AsyncStorage.setItem('routines', JSON.stringify(storedRoutines));
                 navigation.navigate('Entrenamiento');
             } catch (error) {
@@ -83,6 +75,12 @@ export function RutinaScreen({ navigation, route }) {
                 onChangeText={handleRutinaNameChange}
             />
             <ScrollView>
+                {exercises && exercises.length === 0 && (
+                    <View style={styles.emptyExerciseContainer}>
+                        <Icon style={styles.icon}  name ="circle-slash" />
+                        <Text style={styles.emptyExerciseText}>Aún no has agregado ejercicios</Text>
+                    </View>
+                )}
                 {exercises.map((exercise, index) => (
                     <View key={index} style={styles.exerciseContainer}>
                         <Text style={styles.exerciseText}>{exercise.name}</Text>
@@ -139,6 +137,28 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginTop: 10,
+    },
+    emptyExerciseContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 150,
+        position: 'relative',
+    },
+    icon: {
+        position: 'absolute',
+        justifyContent: 'center',
+        alignItems: 'center',
+        fontSize: 120,
+        color: 'gray',  
+        opacity: 0.2,
+        paddingTop: 30,
+        
+    },
+    emptyExerciseText: {
+        fontSize: 18,
+        textAlign: 'center',
+        marginTop: 20,
+        zIndex: 1,
     },
 });
 
