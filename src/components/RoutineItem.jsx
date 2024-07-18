@@ -9,6 +9,9 @@ const RoutineItem = ({ routine, index, navigation, handleDeleteRoutine }) => {
     const toggleExercises = () => {
         setShowExercises(!showExercises);
     };
+    const handleStartTraining = () => {
+        navigation.navigate('StartEntrenamiento', { routine: routine });
+    };
 
     return (
         <View style={styles.card}>
@@ -43,6 +46,12 @@ const RoutineItem = ({ routine, index, navigation, handleDeleteRoutine }) => {
                     onPress={() => handleDeleteRoutine(index)}
                 >
                     <Text style={styles.actionButtonText}>Eliminar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={handleStartTraining}
+                >
+                    <Text style={styles.actionButtonText}>Iniciar</Text>
                 </TouchableOpacity>
             </View>
         </View>

@@ -9,6 +9,8 @@ import { EjercicioScreen } from '../screens/EjercicioScreen';
 import { ModalItemsEjercicios } from '../screens/ModalItemsEjercicios';
 import { toastConfig } from '../components/CustomToast';
 import Toast from 'react-native-toast-message';
+import { StartEntrenamientoScreen } from '../screens/StartEntrenamientoScreen';
+
 function HomeStackScreen() {
 const HomeStack = createNativeStackNavigator();
   return (
@@ -25,6 +27,7 @@ function EntrenamientoStackScreen() {
     <EntrenamientoStack.Navigator>
       <EntrenamientoStack.Group>
         <EntrenamientoStack.Screen name="Entrenamiento" component={EntrenamientoScreen} />
+        <EntrenamientoStack.Screen name="StartEntrenamiento" component={StartEntrenamientoScreen} />
         <EntrenamientoStack.Screen name="Rutina" component={RutinaScreen} />
         <EntrenamientoStack.Screen name="Ejercicio" component={EjercicioScreen} />
       </EntrenamientoStack.Group>

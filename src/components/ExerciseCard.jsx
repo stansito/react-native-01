@@ -1,33 +1,69 @@
-import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { Animated, View, Text, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Octicons';
-import { TouchableOpacity } from 'react-native';
 
-const ExerciseCard = ({ exercise, index, navigation, onDelete }) => {
+const ExerciseCard = ({ exercise, index, navigation, onDelete, animate }) => {
   const handleDelete = () => {
     onDelete(index);
   };
 
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (animate) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 2000, // Duración de la animación en milisegundos
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [fadeAnim, animate]);
+
   return (
     <TouchableOpacity onPress={() => navigation.navigate('Ejercicio', { selectedExercise: exercise, exerciseIndex: index })}>
-      <View style={styles.container}>
-        <View style={styles.imageContainer}>
-          <Text style={styles.seriesText}>imagen</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <View style={styles.infoItemEjercicio}>
-            <Text style={styles.infoValue}>{exercise.name}</Text>
-            <Text style={styles.infoLabel}>Ejercicio</Text>
+      {animate ? (
+        <Animated.View  style={[styles.container, { opacity: fadeAnim ,shadowColor: '#05ff05', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5 }]}>
+          <View style={styles.imageContainer}>
+            <Text style={styles.seriesText}>imagen</Text>
           </View>
-          <View style={styles.infoItemSeries}>
-            <Text style={styles.infoValue}>{exercise.series.length}</Text>
-            <Text style={styles.infoLabel}>Series</Text>
+          <View style={styles.infoContainer}>
+            <View style={styles.infoItemEjercicio}>
+              <Text style={styles.infoValue}>{exercise.name}</Text>
+              <Text style={styles.infoLabel}>Ejercicio</Text>
+            </View>
+            <View style={styles.infoItemSeries}>
+              <Text style={styles.infoValue}>{exercise.series.length}</Text>
+              <Text style={styles.infoLabel}>Series</Text>
+            </View>
           </View>
+          {onDelete && (
+            <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+              <Icon name="trash" size={20} color="#ca3227" />
+            </TouchableOpacity>
+          )}
+        </Animated.View>
+      ) : (
+        <View style={styles.container}>
+          <View style={styles.imageContainer}>
+            <Text style={styles.seriesText}>imagen</Text>
+          </View>
+          <View style={styles.infoContainer}>
+            <View style={styles.infoItemEjercicio}>
+              <Text style={styles.infoValue}>{exercise.name}</Text>
+              <Text style={styles.infoLabel}>Ejercicio</Text>
+            </View>
+            <View style={styles.infoItemSeries}>
+              <Text style={styles.infoValue}>{exercise.series.length}</Text>
+              <Text style={styles.infoLabel}>Series</Text>
+            </View>
+          </View>
+          {onDelete && (
+            <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+              <Icon name="trash" size={20} color="#ca3227" />
+            </TouchableOpacity>
+          )}
         </View>
-        <TouchableOpacity onPress={() => onDelete(index)} style={styles.deleteButton}>
-          <Icon name="trash" size={20} color="#ca3227" />
-        </TouchableOpacity>
-      </View>
+      )}
     </TouchableOpacity>
   );
 };
@@ -72,7 +108,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     padding: 5,
   },
-
   infoItemSeries: {
     alignItems: 'center',
     marginHorizontal: 10,
