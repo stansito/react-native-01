@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, Button, StyleSheet, ScrollView, Alert, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomCard from '../components/CustomCard';
 import ExerciseCard from '../components/ExerciseCard';
 import StepIndicator from 'react-native-step-indicator';
 import Icon from 'react-native-vector-icons/Octicons';
+import Toast from 'react-native-toast-message';
 
 const customStyles = {
   stepIndicatorSize: 30,
@@ -28,8 +29,6 @@ const customStyles = {
   labelColor: '#999999',
   labelSize: 13,
   currentStepLabelColor: '#fe7013',
-
-
 };
 
 export function StartEntrenamientoScreen({ navigation, route }) {
@@ -37,6 +36,9 @@ export function StartEntrenamientoScreen({ navigation, route }) {
   const [exercises, setExercises] = useState([]);
   const [routineId, setRoutineId] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [allCompleted, setAllCompleted] = useState(false); // Estado para manejar la visibilidad del botón
 
   useEffect(() => {
     if (route.params?.routine) {
@@ -60,6 +62,12 @@ export function StartEntrenamientoScreen({ navigation, route }) {
     }
   }, [route.params?.selectedExercise, route.params?.exerciseIndex]);
 
+  useEffect(() => {
+    // Verificar si todos los ejercicios están completados
+    const allCompleted = exercises.every(exercise => exercise.completed);
+    setAllCompleted(allCompleted);
+  }, [exercises]);
+
   const handleRutinaNameChange = (text) => {
     setRutinaName(text);
   };
@@ -80,6 +88,14 @@ export function StartEntrenamientoScreen({ navigation, route }) {
         }
 
         await AsyncStorage.setItem('routines', JSON.stringify(storedRoutines));
+      Toast.show({
+                        type: 'debuggerInfo',
+                        text1: `Rutinas:  ${JSON.stringify(storedRoutines)}`,
+                        position: 'bottom',
+                        visibilityTime: 10000,
+                        bottom: 200
+                    });
+        
         navigation.navigate('Entrenamiento');
       } catch (error) {
         Alert.alert('Error', 'Hubo un problema al guardar la rutina');
@@ -87,6 +103,23 @@ export function StartEntrenamientoScreen({ navigation, route }) {
     } else {
       Alert.alert('Error', 'Por favor, completa todos los campos');
     }
+  };
+
+  const openModal = (exercise, index) => {
+    setSelectedExercise(exercise);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+
+  const markAsCompleted = () => {
+    const updatedExercises = exercises.map((exercise) =>
+      exercise === selectedExercise ? { ...exercise, completed: true } : exercise
+    );
+    setExercises(updatedExercises);
+    closeModal();
   };
 
   return (
@@ -105,16 +138,19 @@ export function StartEntrenamientoScreen({ navigation, route }) {
           {exercises && exercises.length === 0 && (
             <View style={styles.emptyExerciseContainer}>
               <Icon style={styles.icon} name="circle-slash" />
-              <Text style={styles.emptyExerciseText}>Aún no has agregado ejercicios</Text>
+              <Text style={styles.emptyExerciseText}>No hay ejercicios</Text>
             </View>
           )}
-          {exercises.map((exercise, index) => (
+          {exercises && exercises.map((exercise, index) => (
             <ExerciseCard
               key={index}
               exercise={exercise}
               index={index}
-              navigation={navigation}
               animate={true}
+              onPress={openModal}
+              onDelete={(index) => {
+                setExercises(prevExercises => prevExercises.filter((_, i) => i !== index));
+              }}
             />
           ))}
         </ScrollView>
@@ -123,10 +159,21 @@ export function StartEntrenamientoScreen({ navigation, route }) {
         title="Agregar Ejercicio"
         onPress={() => navigation.navigate('Ejercicio', { exerciseIndex: exercises.length })}
       />
-      <Button
-        title="Confirmar Rutina"
-        onPress={handleConfirmRoutine}
-      />
+      {allCompleted && (
+        <Button
+          title="Confirmar Rutina"
+          onPress={handleConfirmRoutine}
+        />
+      )}
+      <Modal visible={modalVisible} onRequestClose={closeModal}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Detalles del Ejercicio</Text>
+          <Text style={styles.modalText}>Nombre: {selectedExercise?.name}</Text>
+          <Text style={styles.modalText}>Series: {selectedExercise?.series.length}</Text>
+          <Button title="Marcar como completado" onPress={markAsCompleted} />
+          <Button title="Cerrar" onPress={closeModal} />
+        </View>
+      </Modal>
     </CustomCard>
   );
 }
@@ -163,6 +210,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
     zIndex: 1,
+  },
+  modalContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 10,
   },
 });
 
