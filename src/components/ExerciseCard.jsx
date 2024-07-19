@@ -22,7 +22,7 @@ const ExerciseCard = ({ exercise, index, navigation, onDelete, animate }) => {
   return (
     <TouchableOpacity onPress={() => navigation.navigate('Ejercicio', { selectedExercise: exercise, exerciseIndex: index })}>
       {animate ? (
-        <Animated.View  style={[styles.container, { opacity: fadeAnim ,shadowColor: '#05ff05', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5 }]}>
+        <Animated.View  style={[styles.container, { opacity: fadeAnim ,shadowColor: '#1c291c', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 5 }]}>
           <View style={styles.imageContainer}>
             <Text style={styles.seriesText}>imagen</Text>
           </View>

@@ -1,14 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, Button, StyleSheet, ScrollView, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomCard from '../components/CustomCard';
 import ExerciseCard from '../components/ExerciseCard';
+import StepIndicator from 'react-native-step-indicator';
 import Icon from 'react-native-vector-icons/Octicons';
+
+const customStyles = {
+  stepIndicatorSize: 30,
+  currentStepIndicatorSize: 40,
+  separatorStrokeWidth: 2,
+  currentStepStrokeWidth: 4,
+  stepStrokeCurrentColor: '#13c7fe',
+  stepStrokeWidth: 3,
+  stepStrokeFinishedColor: '#4b3c32',
+  stepStrokeUnFinishedColor: '#aaaaaa',
+  separatorFinishedColor: '#1e6b75',
+  separatorUnFinishedColor: '#aaaaaa',
+  stepIndicatorFinishedColor: '#293832',
+  stepIndicatorUnFinishedColor: '#ffffff',
+  stepIndicatorCurrentColor: '#ffffff',
+  stepIndicatorLabelFontSize: 15,
+  currentStepIndicatorLabelFontSize: 15,
+  stepIndicatorLabelCurrentColor: '#292624',
+  stepIndicatorLabelFinishedColor: '#ffffff',
+  stepIndicatorLabelUnFinishedColor: '#aaaaaa',
+  labelColor: '#999999',
+  labelSize: 13,
+  currentStepLabelColor: '#fe7013',
+
+
+};
 
 export function StartEntrenamientoScreen({ navigation, route }) {
   const [rutinaName, setRutinaName] = useState('');
   const [exercises, setExercises] = useState([]);
   const [routineId, setRoutineId] = useState(null);
+  const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
     if (route.params?.routine) {
@@ -65,24 +93,32 @@ export function StartEntrenamientoScreen({ navigation, route }) {
     <CustomCard>
       <Text style={styles.title}>{routineId ? 'Iniciar Entrenamiento' : 'Crear Nueva Rutina'}</Text>
       <Text>Rutina: {rutinaName}</Text>
-      <ScrollView>
-        {exercises && exercises.length === 0 && (
-          <View style={styles.emptyExerciseContainer}>
-            <Icon style={styles.icon} name="circle-slash" />
-            <Text style={styles.emptyExerciseText}>Aún no has agregado ejercicios</Text>
-          </View>
-        )}
-        {exercises.map((exercise, index) => (
-          <ExerciseCard
-            key={index}
-            exercise={exercise}
-            index={index}
-            navigation={navigation}
-            animate={true}
-         
-          />
-        ))}
-      </ScrollView>
+      <View style={styles.container}>
+        <StepIndicator
+          customStyles={customStyles}
+          currentPosition={currentStep}
+          stepCount={exercises.length}
+          direction='vertical'
+          style={styles.stepIndicator}
+        />
+        <ScrollView style={styles.scrollView}>
+          {exercises && exercises.length === 0 && (
+            <View style={styles.emptyExerciseContainer}>
+              <Icon style={styles.icon} name="circle-slash" />
+              <Text style={styles.emptyExerciseText}>Aún no has agregado ejercicios</Text>
+            </View>
+          )}
+          {exercises.map((exercise, index) => (
+            <ExerciseCard
+              key={index}
+              exercise={exercise}
+              index={index}
+              navigation={navigation}
+              animate={true}
+            />
+          ))}
+        </ScrollView>
+      </View>
       <Button
         title="Agregar Ejercicio"
         onPress={() => navigation.navigate('Ejercicio', { exerciseIndex: exercises.length })}
@@ -99,14 +135,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  input: {
-    width: '100%',
     marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
+  },
+  container: {
+    flexDirection: 'row',
+  },
+  scrollView: {
+    width: '70%',
   },
   emptyExerciseContainer: {
     alignItems: 'center',

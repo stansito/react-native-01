@@ -31,7 +31,8 @@ export function EjercicioScreen({ route, navigation }) {
             );
             return newSeries;
         });
-    };
+    }
+
 
     const saveExercise = () => {
         const updatedExercise = { ...currentExercise, series };
