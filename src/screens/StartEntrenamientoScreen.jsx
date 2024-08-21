@@ -6,6 +6,7 @@ import ExerciseCard from '../components/ExerciseCard';
 import StepIndicator from 'react-native-step-indicator';
 import Icon from 'react-native-vector-icons/Octicons';
 import Toast from 'react-native-toast-message';
+import { setupDatabase, insertExercise,insertSeries,insertExerciseInRoutine, getExerciseInRotineById } from '../storage/setupDatabase'; // Asegúrate de usar la ruta correcta
 
 const customStyles = {
   stepIndicatorSize: 30,
@@ -39,6 +40,7 @@ export function StartEntrenamientoScreen({ navigation, route }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [allCompleted, setAllCompleted] = useState(false); // Estado para manejar la visibilidad del botón
+
 
   useEffect(() => {
     if (route.params?.routine) {
@@ -74,8 +76,25 @@ export function StartEntrenamientoScreen({ navigation, route }) {
 
   const handleConfirmRoutine = async () => {
     if (rutinaName && exercises.length > 0) {
-      const newRoutine = { id: routineId || Date.now().toString(), name: rutinaName, exercises: exercises };
+      const newRoutine = { id: routineId , name: rutinaName, exercises: exercises };
       try {
+        // Configura la base de datos
+        const db = await setupDatabase();
+  
+        // Inserta cada ejercicio en la base de datos
+        for (const exercise of exercises) {
+          // Verifica que cada ejercicio tenga todos los campos necesarios
+          console.log("Tipo de ejercicio" +  exercise.name );
+          const exerciseId = await insertExercise(db, Date.now().toString(), exercise.name, exercise.notas);
+          for (const serie of exercise.series) {
+            await insertSeries(db, exerciseId, serie.id, serie.weight, serie.reps);
+          }
+
+          // Link the exercise to the routine in the ejercicios_en_rutinas table
+          const routineResult =await insertExerciseInRoutine(db, routineId, exerciseId);
+          const rutina = await getExerciseInRotineById(db,routineResult);
+          console.log('Routine result:', rutina);
+        }
         let storedRoutines = await AsyncStorage.getItem('routines');
         storedRoutines = storedRoutines ? JSON.parse(storedRoutines) : [];
 
@@ -88,22 +107,24 @@ export function StartEntrenamientoScreen({ navigation, route }) {
         }
 
         await AsyncStorage.setItem('routines', JSON.stringify(storedRoutines));
-      Toast.show({
-                        type: 'debuggerInfo',
-                        text1: `Rutinas:  ${JSON.stringify(storedRoutines)}`,
-                        position: 'bottom',
-                        visibilityTime: 10000,
-                        bottom: 200
-                    });
-        
+
+        Toast.show({
+          type: 'success',
+          text1: `Rutina guardada exitosamente`,
+          position: 'bottom',
+          visibilityTime: 5000,
+          bottom: 200,
+        });
+  
         navigation.navigate('Entrenamiento');
       } catch (error) {
-        Alert.alert('Error', 'Hubo un problema al guardar la rutina');
+        Alert.alert('Error', 'Hubo un problema al guardar la rutina: ' + error.message);
       }
     } else {
       Alert.alert('Error', 'Por favor, completa todos los campos');
     }
   };
+  
 
   const openModal = (exercise, index) => {
     setSelectedExercise(exercise);

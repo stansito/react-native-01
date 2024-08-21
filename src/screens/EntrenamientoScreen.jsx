@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomCard from '../components/CustomCard';
 import Toast from 'react-native-toast-message';
 import RoutineItem from '../components/RoutineItem';
+import { setupDatabase, deleteRoutineById } from '../storage/setupDatabase'; 
 
 
 export function EntrenamientoScreen({ navigation }) {
@@ -19,13 +20,13 @@ export function EntrenamientoScreen({ navigation }) {
                 if (storedRoutines) {
                     const routinesData = JSON.parse(storedRoutines);
                     setRoutines(routinesData);
-                   /* Toast.show({
+                    Toast.show({
                         type: 'debuggerInfo',
                         text1: `Rutinas:  ${JSON.stringify(routinesData)}`,
                         position: 'bottom',
                         visibilityTime: 10000,
                         bottom: 200
-                    });*/
+                    });
                 }
             } catch (error) {
                 console.error('Error loading routines:', error);
@@ -48,6 +49,9 @@ export function EntrenamientoScreen({ navigation }) {
             updatedRoutines.splice(routineIndex, 1);
             await AsyncStorage.setItem('routines', JSON.stringify(updatedRoutines));
             setRoutines(updatedRoutines);
+            const db = await setupDatabase();
+            await deleteRoutineById(db, routines[routineIndex].id);
+            
             Toast.show({
                 type: 'success',    
                 text1: 'Rutina eliminada',

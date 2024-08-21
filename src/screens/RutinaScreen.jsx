@@ -4,6 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomCard from '../components/CustomCard';
 import ExerciseCard from '../components/ExerciseCard';
 import Icon from 'react-native-vector-icons/Octicons';
+import { setupDatabase, insertRoutine } from '../storage/setupDatabase'; 
 
 export function RutinaScreen({ navigation, route }) {
   const [rutinaName, setRutinaName] = useState('');
@@ -38,8 +39,10 @@ export function RutinaScreen({ navigation, route }) {
 
   const handleConfirmRoutine = async () => {
     if (rutinaName && exercises.length > 0) {
-      const newRoutine = { id: routineId || Date.now().toString(), name: rutinaName, exercises: exercises };
       try {
+        const db = await setupDatabase();
+        const routineId = await insertRoutine(db, rutinaName);
+        const newRoutine = { id: routineId , name: rutinaName, exercises: exercises };
         let storedRoutines = await AsyncStorage.getItem('routines');
         storedRoutines = storedRoutines ? JSON.parse(storedRoutines) : [];
 
