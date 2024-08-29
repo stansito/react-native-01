@@ -9,16 +9,18 @@ export async function setupDatabase() {
      CREATE TABLE IF NOT EXISTS tipos_ejercicios (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         nombre TEXT NOT NULL
-      );
+      );`);
 
-      CREATE TABLE IF NOT EXISTS ejercicios (
+    await db.execAsync(`
+
+     CREATE TABLE IF NOT EXISTS ejercicios (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         fecha TEXT NOT NULL,
         tipo_ejercicio_id INTEGER NOT NULL,
         notas TEXT,
         FOREIGN KEY (tipo_ejercicio_id) REFERENCES tipos_ejercicios(id)
-      );
-
+      );`);
+      await db.execAsync(`
       CREATE TABLE IF NOT EXISTS series (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         ejercicio_id INTEGER NOT NULL,
@@ -26,13 +28,13 @@ export async function setupDatabase() {
         peso REAL NOT NULL,
         repeticiones INTEGER NOT NULL,
         FOREIGN KEY (ejercicio_id) REFERENCES ejercicios(id)
-      );
-
+      );`); 
+      await db.execAsync(`
       CREATE TABLE IF NOT EXISTS rutinas (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         nombre TEXT NOT NULL
-      );
-
+      );`);
+     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS ejercicios_en_rutinas (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
         rutina_id INTEGER NOT NULL,
@@ -93,6 +95,7 @@ export async function insertTipoEjercicio(db, nombre) {
 // Inserta un ejercicio
 export async function insertExercise(db, fecha, tipoEjercicioId, notas) {
   try {
+    console.log('Insertando Ejercicio .....')
     const result = await db.runAsync(
       'INSERT INTO ejercicios (fecha, tipo_ejercicio_id, notas) VALUES (?, ?, ?)',
       fecha, tipoEjercicioId, notas
@@ -107,6 +110,7 @@ export async function insertExercise(db, fecha, tipoEjercicioId, notas) {
 // Inserta una rutina
 export async function insertRoutine(db, nombre) {
   try {
+    console.log('Insertando Rutina.....')
     const result = await db.runAsync('INSERT INTO rutinas (nombre) VALUES (?)', nombre);
     console.log(`Inserted routine with id: ${result.lastInsertRowId}`);
     return result.lastInsertRowId;
@@ -117,10 +121,12 @@ export async function insertRoutine(db, nombre) {
 // Inserta una serie asociada a un ejercicio
 export async function insertSeries(db, ejercicioId, numeroSerie, peso, repeticiones) {
   try {
+  console.log('Insertando Series.....')
   const result = await db.runAsync(
   'INSERT INTO series (ejercicio_id, numero_serie, peso, repeticiones) VALUES (?, ?, ?, ?)',
         ejercicioId, numeroSerie, peso, repeticiones
   );
+  console.log(`Inserted series with id: ${result.lastInsertRowId}`);
   return result.lastInsertRowId;
   } catch (error) {
     console.error('Error inserting series:', error);
@@ -131,6 +137,7 @@ export async function insertSeries(db, ejercicioId, numeroSerie, peso, repeticio
 // Relaciona un ejercicio con una rutina
 export async function insertExerciseInRoutine(db, rutinaId, ejercicioId) {
   try {
+    console.log('Insertando Ejercicio en Rutina.....')
     const result = await db.runAsync('INSERT INTO ejercicios_en_rutinas (rutina_id, ejercicio_id) VALUES (?, ?)', rutinaId, ejercicioId);
     console.log(`Inserted exercise in routine with id: ${result.lastInsertRowId}`);
     return result.lastInsertRowId;

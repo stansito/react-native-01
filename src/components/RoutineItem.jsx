@@ -16,7 +16,7 @@ const RoutineItem = ({ routine, index, navigation, handleDeleteRoutine }) => {
     return (
         <View style={styles.card}>
             <View style={styles.titleContainer}>
-                <Text style={styles.routineTitle}>s{routine.name}</Text>
+                <Text style={styles.routineTitle}>{routine.name}</Text>
             </View>
             <TouchableOpacity style={styles.slidersContainer} onPress={toggleExercises}>
                 <Text style={styles.exercicecounter}>{routine.exercises.length}</Text>

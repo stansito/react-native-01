@@ -13,8 +13,8 @@ export function HomeScreen({ navigation }) {
       if (db) {
         // Inserta un registro de ejemplo
         //TODO: 
-        const exerciseResult = await getExerciseById(db, 89);
-        const routineResult = await getRoutineById(db, 6);
+        const exerciseResult = await getExerciseById(db, 93);
+        const routineResult = await getRoutineById(db, 12);
         //await deleteRoutineById(db, 3);
         console.log("Rutina: ",routineResult);
         //const routinesData = await getAllRoutines(db);
@@ -41,7 +41,7 @@ export function HomeScreen({ navigation }) {
               {exercise.series && exercise.series.length > 0 ? (
                 exercise.series.map((serie, index) => (
                   <View key={index}>
-                    <Text style={styles.text}>Serie {serie.numero_serie}: {serie.peso} kg x {serie.repeticiones} reps</Text>
+                    <Text style={styles.text}>Serie {serie.id}: {serie.peso} kg x {serie.repeticiones} reps</Text>
                   </View>
                 ))
               ) : (

@@ -13,7 +13,7 @@ const customStyles = {
   currentStepIndicatorSize: 40,
   separatorStrokeWidth: 2,
   currentStepStrokeWidth: 4,
-  stepStrokeCurrentColor: '#13c7fe',
+  stepStrokeCurrentColor: '#193741',
   stepStrokeWidth: 3,
   stepStrokeFinishedColor: '#4b3c32',
   stepStrokeUnFinishedColor: '#aaaaaa',
@@ -39,8 +39,7 @@ export function StartEntrenamientoScreen({ navigation, route }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(null);
-  const [allCompleted, setAllCompleted] = useState(false); // Estado para manejar la visibilidad del botón
-
+  const [allCompleted, setAllCompleted] = useState(false);
 
   useEffect(() => {
     if (route.params?.routine) {
@@ -65,39 +64,49 @@ export function StartEntrenamientoScreen({ navigation, route }) {
   }, [route.params?.selectedExercise, route.params?.exerciseIndex]);
 
   useEffect(() => {
-    // Verificar si todos los ejercicios están completados
     const allCompleted = exercises.every(exercise => exercise.completed);
     setAllCompleted(allCompleted);
   }, [exercises]);
 
-  const handleRutinaNameChange = (text) => {
-    setRutinaName(text);
+  const openModal = (exercise, index) => {
+    if (index > currentStep) {
+      Alert.alert('Aviso', 'Debes completar los ejercicios en orden.');
+    } else {
+      setSelectedExercise(exercise);
+      setModalVisible(true);
+    }
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+
+  const markAsCompleted = () => {
+    const updatedExercises = exercises.map((exercise, index) =>
+      exercise === selectedExercise ? { ...exercise, completed: true } : exercise
+    );
+    setExercises(updatedExercises);
+    setCurrentStep(prevStep => prevStep + 1);
+    closeModal();
   };
 
   const handleConfirmRoutine = async () => {
     if (rutinaName && exercises.length > 0) {
-      const newRoutine = { id: routineId , name: rutinaName, exercises: exercises };
+      const newRoutine = { id: routineId, name: rutinaName, exercises: exercises };
       try {
-        // Configura la base de datos
         const db = await setupDatabase();
-  
-        // Inserta cada ejercicio en la base de datos
         for (const exercise of exercises) {
-          // Verifica que cada ejercicio tenga todos los campos necesarios
-          console.log("Tipo de ejercicio" +  exercise.name );
           const exerciseId = await insertExercise(db, Date.now().toString(), exercise.name, exercise.notas);
           for (const serie of exercise.series) {
             await insertSeries(db, exerciseId, serie.id, serie.weight, serie.reps);
           }
-
-          // Link the exercise to the routine in the ejercicios_en_rutinas table
-          const routineResult =await insertExerciseInRoutine(db, routineId, exerciseId);
-          const rutina = await getExerciseInRotineById(db,routineResult);
+          const routineResult = await insertExerciseInRoutine(db, routineId, exerciseId);
+          const rutina = await getExerciseInRotineById(db, routineResult);
           console.log('Routine result:', rutina);
         }
+
         let storedRoutines = await AsyncStorage.getItem('routines');
         storedRoutines = storedRoutines ? JSON.parse(storedRoutines) : [];
-
         const existingRoutineIndex = storedRoutines.findIndex(routine => routine.id === routineId);
 
         if (existingRoutineIndex !== -1) {
@@ -115,7 +124,7 @@ export function StartEntrenamientoScreen({ navigation, route }) {
           visibilityTime: 5000,
           bottom: 200,
         });
-  
+
         navigation.navigate('Entrenamiento');
       } catch (error) {
         Alert.alert('Error', 'Hubo un problema al guardar la rutina: ' + error.message);
@@ -123,24 +132,6 @@ export function StartEntrenamientoScreen({ navigation, route }) {
     } else {
       Alert.alert('Error', 'Por favor, completa todos los campos');
     }
-  };
-  
-
-  const openModal = (exercise, index) => {
-    setSelectedExercise(exercise);
-    setModalVisible(true);
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
-  };
-
-  const markAsCompleted = () => {
-    const updatedExercises = exercises.map((exercise) =>
-      exercise === selectedExercise ? { ...exercise, completed: true } : exercise
-    );
-    setExercises(updatedExercises);
-    closeModal();
   };
 
   return (
@@ -156,20 +147,20 @@ export function StartEntrenamientoScreen({ navigation, route }) {
           style={styles.stepIndicator}
         />
         <ScrollView style={styles.scrollView}>
-          {exercises && exercises.length === 0 && (
+          {exercises.length === 0 && (
             <View style={styles.emptyExerciseContainer}>
               <Icon style={styles.icon} name="circle-slash" />
               <Text style={styles.emptyExerciseText}>No hay ejercicios</Text>
             </View>
           )}
-          {exercises && exercises.map((exercise, index) => (
+          {exercises.map((exercise, index) => (
             <ExerciseCard
               key={index}
               exercise={exercise}
               index={index}
               animate={true}
               onPress={openModal}
-              onDelete={(index) => {
+              onDelete={() => {
                 setExercises(prevExercises => prevExercises.filter((_, i) => i !== index));
               }}
             />

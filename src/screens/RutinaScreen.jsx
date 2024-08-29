@@ -40,17 +40,20 @@ export function RutinaScreen({ navigation, route }) {
   const handleConfirmRoutine = async () => {
     if (rutinaName && exercises.length > 0) {
       try {
-        const db = await setupDatabase();
-        const routineId = await insertRoutine(db, rutinaName);
-        const newRoutine = { id: routineId , name: rutinaName, exercises: exercises };
+
+     
         let storedRoutines = await AsyncStorage.getItem('routines');
         storedRoutines = storedRoutines ? JSON.parse(storedRoutines) : [];
 
-        const existingRoutineIndex = storedRoutines.findIndex(routine => routine.id === routineId);
+        const existingRoutineIndex = storedRoutines.findIndex(routine => routine.id === routineId );
 
         if (existingRoutineIndex !== -1) {
-          storedRoutines[existingRoutineIndex] = newRoutine;
+          const existsRoutine = { id: routineId , name: rutinaName, exercises: exercises };
+          storedRoutines[existingRoutineIndex] = existsRoutine;
         } else {
+          const db = await setupDatabase();
+          const routineIdDB = await insertRoutine(db, rutinaName);
+          const newRoutine = { id: routineIdDB , name: rutinaName, exercises: exercises };
           storedRoutines.push(newRoutine);
         }
 
